@@ -1,0 +1,16 @@
+{"modules":{
+  "VPNIM": {
+    "module_id": "c37152b8-b922-4f01-9bd6-1631ffd6ecaf",
+    "module_dt_integrated": "2024-10-28 03:41:53.650932",
+    "module_integrated_name": "vpnsr1.py",
+    "module_description": "VPN INTEGRATOR DESCRIPTION",
+    "module_hash_sha256": "1e2a92507434d4301ee4db092c590fe780e8868a211abe27823bd55b59ca6e1e1"
+  },
+  "VPN_VPS": {"module_id": "1df0dddc-a1af-4fcd-927e-414b3edb4249",
+    "module_dt_integrated": "2024-10-30 20:19:50.358981",
+    "module_integrated_name": "vpn_worker.py",
+    "module_description": "VPN INTEGRATOR DESCRIPTION",
+    "module_hash_sha256": ""
+  }
+}
+}

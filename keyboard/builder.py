@@ -55,7 +55,17 @@ async def un_btns(data, adjust=None):
     return result
 
 
-def genmarkup(data, special=None):    # передаём в функцию data dynamics
+def markup_camelia(datasheet):
+    buttons_names = list(datasheet["list"].keys())
+    result = []
+    for names in buttons_names:
+        result.append((datasheet[names], names))
+    main_button = datasheet["main_button"]
+
+    return result
+
+
+def genmarkup(data, special=None):    # передаём в функцию data dynamics в формате [(callback0, text0),...]
     kb = InlineKeyboardBuilder()
     if special is None:
         for dat in data:
@@ -70,7 +80,6 @@ def genmarkup(data, special=None):    # передаём в функцию data 
     #     kb.button(text='Админ меню', callback_data="admin_menu")
     # elif special == "admin_res":
     #     kb.button(text='Админ меню', callback_data="issues_mgmt_mode")
-
     kb.adjust(1)
     return kb.as_markup()
 
@@ -90,5 +99,9 @@ async def link_btn(caption, url):
 
 def gensbtns(data):
     kb = ReplyKeyboardBuilder()
-    [kb.button(text=dat) for dat in data]
+    for dat in data:
+        kb.button(text=dat, adjust=1)
+    kb.adjust(1)
     return kb.as_markup(resize_keyboard=True, one_time_keyboard=True)
+
+

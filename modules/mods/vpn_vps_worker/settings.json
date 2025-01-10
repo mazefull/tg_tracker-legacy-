@@ -1,0 +1,22 @@
+{
+    "module": {
+        "module_name": "VPN_VPS",
+        "module_integrated_name": "vpn_worker.py",
+        "module_description": "VPN INTEGRATOR DESCRIPTION",
+        "module_hash_sha256": ""
+    },
+    "setup": {
+        "mode":  "",
+        "vps": {
+            "host": "46.29.239.97",
+            "user": "root",
+            "secret": "179f694d3ad7ac!",
+            "port": "22"
+        },
+        "tbot": {
+            "admin_id": "",
+            "operator_ids": "",
+            "API": ""
+        }
+    }
+}

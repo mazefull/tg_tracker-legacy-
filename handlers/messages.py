@@ -1,17 +1,35 @@
+import requests
 from aiogram import Router
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from keyboard.builder import btni, gensbtns, genmarkup, btni_static
 import keyboard.static as skb
 import json
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from handlers.commands import BuildTask, InitUser
-from tracker.service import init_user, get_users_creds, get_groups, get_projects
+from tracker.service import users, taskdata, permit
 from tracker.manager import Task
 from tracker.notificator import send_notify
 from aiogram_calendar import SimpleCalendar
 
 router = Router()
+
+
+
+async def notify_user(chat_id, task_id, special):
+    chart = {
+        "NEW": "Для тебя появилась новая задача: ",
+        "ASSIGN": "На тебя назначена задача: ",
+        "SD": "Пришел результат по твоему запросу: "
+    }
+    try:
+        text = chart[special] + {task_id}
+    except:
+        text = special + task_id
+
+    await send_notify(chat_id=chat_id,
+                      text=text,
+                      reply_marlup=await btni('Посмотреть задачи', 'my_tasks'))
 
 
 @router.message(BuildTask.tittle)
@@ -25,7 +43,7 @@ async def new_task__upd_tittle(message: Message, state: FSMContext):
 async def new_task__upd_desc(message: Message, state: FSMContext):
     await state.update_data(desc=message.text)
     await state.set_state(BuildTask.project)
-    projects = get_projects()
+    projects = taskdata().get_projects()
     if projects is None:
         await message.answer("[TASK] Нет проектов, отправь сообщение с названием нового проекта")
     else:
@@ -64,25 +82,25 @@ async def new_task__upd_priority(message: Message, state: FSMContext):
 
 @router.message(BuildTask.assign)
 async def new_task__upd_assign(message: Message, state: FSMContext):
+    button_from_permission = skb.main_menu_tasks_permisson_chart[permit().main_menu_btns(userid=message.chat.id)]
     selector = message.text
     if selector == "Пользователь":
         await state.update_data(special='user')
         await state.set_state(BuildTask.pre_send)
         print('Генерим юзеров по списку')
-        mrk = genmarkup(await get_users_creds(), 1)
+        mrk = genmarkup(await users().get_users_creds(), 1)
         await message.answer('Выбери пользователя', reply_markup=mrk)
 
     elif selector == 'Группа':
         await state.update_data(special='group')
         await state.set_state(BuildTask.pre_send)
         print('Генерим группы по списку')
-        mrk = genmarkup(await get_groups())
+        mrk = genmarkup(await users().get_groups())
         await message.answer('Выбери группу пользователей', reply_markup=mrk)
 
-    elif selector == 'Без привязки':
-        print('Назначаем на админа')
-        await state.update_data(assign=None)
-        await state.set_state(BuildTask.pre_send)
+    else:
+        await state.clear()
+        await message.answer('Ошибка, возращаемся в главное меню', reply_markup=await btni_static(data=button_from_permission, adjust=1))
 
 
 @router.callback_query(BuildTask.pre_send)
@@ -114,6 +132,8 @@ async def new_task__pre_send(callback: CallbackQuery, state: FSMContext):
 
 @router.message(BuildTask.send)
 async def new_task__send(message: Message, state: FSMContext):
+    button_from_permission = skb.main_menu_tasks_permisson_chart[permit().main_menu_btns(userid=message.chat.id)]
+
     if message.text == "OK":
         data = await state.get_data()
         if data['special'] == 'group':
@@ -125,14 +145,32 @@ async def new_task__send(message: Message, state: FSMContext):
                                    priority=data['priority'], assign=assign_to_tracker, user=message.chat.id,
                                    deadline=data["deadline"])
         await state.clear()
-        await message.answer(f'Создана задача {task_id}', reply_markup=await btni_static(data=skb.main_menu, adjust=1))
+        await message.answer(f'Создана задача {task_id}', reply_markup=await btni_static(data=button_from_permission, adjust=1))
         if data['special'] == 'user':
             await send_notify(chat_id=data['assign'],
                               text=f"Для тебя появилась новая задача: {task_id}",
                               reply_marlup=await btni('Посмотреть задачи', 'my_tasks'))
     else:
-        await message.answer('Процедура прервана', reply_markup=await btni_static(data=skb.main_menu, adjust=1))
+        await message.answer('Процедура прервана', reply_markup=await btni_static(data=button_from_permission, adjust=1))
 
+
+
+
+async def request_permission(message: Message, specc):
+    import uuid
+    intask_id = str(uuid.uuid4())[-12:]
+    user_id = message.chat.id
+    project = "RREQ"
+
+    print('SDATA', specc)
+
+    task_id = Task().new_issue(tittle="REG_REQUEST",
+                               intask_id=intask_id,
+                               desc=f'Выдача пермишен для {user_id} (@{message.from_user.username})\n\n'
+                                    f'Тип пермишен: {specc["select_permission"]}',
+                               assign=276914408, project=project, task_type="SD", user=message.chat.id, deadline=0)
+    Task().new_sd(intask_id, user_id, user_id, status_profile='REQUEST', sheet='reg')
+    Task().sd_task_worker(intask_id=intask_id, task_id=task_id, project=project, sheet='reg')
 
 @router.message(InitUser.fname)
 async def new_user__upd_fname(message: Message, state: FSMContext):
@@ -140,7 +178,26 @@ async def new_user__upd_fname(message: Message, state: FSMContext):
     if not "_" in fname:
         await message.answer('[REG] Неверный формат. Попробуй ещё раз')
     else:
+        try:
+            username = message.from_user.username
+        except:
+            username = "No_UNAME"
+
+        await users().init_user((message.chat.id, username, fname))
+
+        data = await state.get_data()
+        print('IUS ', data)
+
+        await request_permission(message, data)
+        await message.answer(f'[REG] Спасибо. Администратору отправлен запрос доступа')
+
+        data = users().get_task_registation_request(message.chat.id)
+        await send_notify(chat_id=data[2],
+                          text=f'Пользователь {message.chat.id} (@{message.from_user.username}) запросил выдачу пермишена.\n\n'
+                               f'Операционный таск: {data[1]}',
+                          reply_marlup=await btni('Открыть задачи', 'my_tasks'))
+
+
         await state.clear()
-        await init_user((message.chat.id, message.from_user.username, fname))
-        await message.answer(f'[REG] Спасибо. Теперь можно пользоваться трекером')
-        await message.answer(skb.start_text, reply_markup=await btni_static(data=skb.main_menu, adjust=1))
+        # await send_notify(chat_id=276914408, text=f'Зарегистрирован пользователь {fname} (@{username})')
+        # await message.answer(skb.start_text, reply_markup=await btni_static(data=skb.main_menu, adjust=1))

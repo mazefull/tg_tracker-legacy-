@@ -1,0 +1,8 @@
+{
+  "module": {
+    "module_name": "VPNIM",
+    "module_integrated_name": "vpnsr1.py",
+    "module_description": "VPN INTEGRATOR DESCRIPTION",
+    "module_hash_sha256": "e2a92507434d4301ee4db092c590fe780e8868a211abe27823bd55b59ca6e1e1"
+  }
+}
