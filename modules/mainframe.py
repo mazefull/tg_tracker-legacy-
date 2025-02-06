@@ -5,7 +5,7 @@ from datetime import datetime
 from uuid import uuid4
 
 class Settings:
-    useModules = True
+    useModules = False
     check_SHA256 = False
     DebugLevel = 0
 

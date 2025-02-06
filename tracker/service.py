@@ -134,6 +134,9 @@ class config:
     def build_config(self):
         os.system('echo "" >> tracker.json')
 
+
+
+
     def write_config(self, var, data):
         try:
             file = open('tracker.json', 'w')
@@ -151,7 +154,7 @@ class config:
 
         except FileNotFoundError:
             self.build_config()
-            self.write_config(var, '')
+            self.write_config("config", '')
 
         else:
             data = json.load(file)

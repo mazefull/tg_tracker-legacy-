@@ -91,7 +91,7 @@ async def checker_send(specs=None):
                                           text=f'Приближается дедлайн по твоей задаче {notify[0][0]}\n\nОсталось времени: {notify[1]}')
 
 
-async def on_timer_deadline_checker(delay=16,  enabled=True):
+async def on_timer_deadline_checker(delay=16,  enabled=False):
     """
     Функция автоматического опроса дедлайнов через заданный промежуток времени.
 

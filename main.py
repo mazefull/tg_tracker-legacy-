@@ -1,4 +1,3 @@
-import datetime
 from aiogram import Bot, Dispatcher
 import asyncio
 import logging
@@ -14,7 +13,7 @@ from dotenv import load_dotenv
 import os
 
 
-pre_run = True  #Активация DEADLINE TIMER
+pre_run = False  #Активация DEADLINE TIMER
 sync_buffer = False  #Отправка уведомлений по ручным таскам из буфера
 
 load_dotenv()
@@ -27,7 +26,7 @@ notify = notifys()
 taskdata = taskdata()
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
-asyncio.run(taskdata.get_task_issuer("9931770340eb"))
+# asyncio.run(taskdata.get_task_issuer("9931770340eb"))
 
 async def bot_run():
 
@@ -39,7 +38,7 @@ async def bot_run():
 
 async def main():
     if pre_run: task_pre_run = asyncio.create_task(on_timer_deadline_checker())
-    if sync_buffer: task_sync_notify_buffer = asyncio.create_task()
+    if sync_buffer: task_sync_notify_buffer = asyncio.create_task(sync_notify_buffer())
     task_main_bot = asyncio.create_task(bot_run())
     dp.include_routers(
         c_router,
@@ -49,7 +48,7 @@ async def main():
     )
 
     if pre_run: await task_pre_run
-    if sync_buffer: await task_sync_notify_buffer(sync_notify_buffer())
+    if sync_buffer: await task_sync_notify_buffer
     await task_main_bot
 
 

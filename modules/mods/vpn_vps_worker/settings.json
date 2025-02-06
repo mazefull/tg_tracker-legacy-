@@ -8,9 +8,9 @@
     "setup": {
         "mode":  "",
         "vps": {
-            "host": "46.29.239.97",
-            "user": "root",
-            "secret": "179f694d3ad7ac!",
+            "host": "***",
+            "user": "***",
+            "secret": "***",
             "port": "22"
         },
         "tbot": {

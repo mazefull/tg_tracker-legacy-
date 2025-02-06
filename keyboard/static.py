@@ -274,7 +274,7 @@ sd_buttons = {
 
 
 
-task_menu_actions = (('Статус', 'Назначить', '🛑Не трогай блять', 'Комментарий'),
+task_menu_actions = (('Статус', 'Назначить', 'DONT TOUCH', 'Комментарий'),
                      ('task_change_status', 'task_assign', 'task_new_comment', 'task_new_comment'))
 
 
